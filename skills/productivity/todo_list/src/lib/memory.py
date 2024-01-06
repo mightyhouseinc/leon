@@ -95,10 +95,7 @@ def has_todo_list(name: str) -> bool:
     """Check if a todo list already exist"""
 
     todo_lists: list[TodoList] = todo_lists_memory.read()
-    for todo_list in todo_lists:
-        if todo_list['name'] == name:
-            return True
-    return False
+    return any(todo_list['name'] == name for todo_list in todo_lists)
 
 
 def create_todo_item(todo_list_name: str, name: str) -> None:

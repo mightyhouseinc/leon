@@ -29,7 +29,7 @@ class Memory:
                 domain_name,
                 skill_name,
                 'memory',
-                memory_name + '.json'
+                f'{memory_name}.json',
             )
 
     def clear(self) -> None:
@@ -63,14 +63,13 @@ class Memory:
         Write the memory
         :param memory: The memory to write
         """
-        if not self.__is_from_another_skill:
-            try:
-                with open(self.memory_path, 'w') as f:
-                    json.dump(memory, f, indent=2)
-
-                return memory
-            except Exception as e:
-                print(f'Error while writing memory for "{self.name}": {e}')
-                raise e
-        else:
+        if self.__is_from_another_skill:
             raise ValueError(f'You cannot write into the memory "{self.name}" as it belongs to another skill')
+        try:
+            with open(self.memory_path, 'w') as f:
+                json.dump(memory, f, indent=2)
+
+            return memory
+        except Exception as e:
+            print(f'Error while writing memory for "{self.name}": {e}')
+            raise e

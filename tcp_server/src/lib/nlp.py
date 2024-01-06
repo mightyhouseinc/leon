@@ -86,24 +86,23 @@ def extract_spacy_entities(utterance: str) -> list[dict]:
                         if city_population == 0:
                             entity += ':city'
 
-                        if cities[city]['population'] > city_population:
-                            resolution['data'] = copy.deepcopy(cities[city])
-                            city_population = cities[city]['population']
-
-                            for country in countries:
-                                if countries[country]['iso'] == cities[city]['countrycode']:
-                                    resolution['data']['country'] = copy.deepcopy(countries[country])
-                                    break
-                            try:
-                                del resolution['data']['geonameid']
-                                del resolution['data']['alternatenames']
-                                del resolution['data']['admin1code']
-                                delete_unneeded_country_data(resolution['data']['country'])
-                            except BaseException:
-                                pass
-                        else:
+                        if cities[city]['population'] <= city_population:
                             continue
 
+                        resolution['data'] = copy.deepcopy(cities[city])
+                        city_population = cities[city]['population']
+
+                        for country in countries:
+                            if countries[country]['iso'] == cities[city]['countrycode']:
+                                resolution['data']['country'] = copy.deepcopy(countries[country])
+                                break
+                        try:
+                            del resolution['data']['geonameid']
+                            del resolution['data']['alternatenames']
+                            del resolution['data']['admin1code']
+                            delete_unneeded_country_data(resolution['data']['country'])
+                        except BaseException:
+                            pass
             entities.append({
                 'start': ent.start_char,
                 'end': ent.end_char,

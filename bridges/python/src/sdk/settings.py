@@ -54,10 +54,7 @@ class Settings:
             with open(self.settings_path, 'r') as file:
                 settings = json.load(file)
 
-                if key is not None:
-                    return settings[key]
-
-                return settings
+                return settings[key] if key is not None else settings
         except Exception as e:
             print(f"Error while reading settings at '{self.settings_path}': {e}")
             raise e

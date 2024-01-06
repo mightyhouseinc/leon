@@ -13,17 +13,16 @@ api_key: str = settings.get('api_key')
 def run(params: ActionParams) -> None:
     """Verify if one or several email addresses have been pwned"""
 
-    emails: list[str] = []
-
-    for item in params['current_entities']:
-        if item['entity'] == 'email':
-            emails.append(item['resolution']['value'])
-
-    if len(emails) == 0:
+    emails: list[str] = [
+        item['resolution']['value']
+        for item in params['current_entities']
+        if item['entity'] == 'email'
+    ]
+    if not emails:
         emails = settings.get('emails')
 
-        if len(emails) == 0:
-            return leon.answer({'key': 'no_email'})
+    if len(emails) == 0:
+        return leon.answer({'key': 'no_email'})
 
     for email in emails:
         leon.answer({'key': 'checking'})
@@ -43,13 +42,19 @@ def run(params: ActionParams) -> None:
             breaches = response['data']
             breached = len(breaches) > 0
             if breached:
-                result: str = ''
-                for breach in breaches:
-                    result += str(leon.set_answer_data('list_element', {
-                        'url': f'https://{breach["Domain"]}',
-                        'name': breach['Name'],
-                        'total': breach['PwnCount']
-                    }))
+                result: str = ''.join(
+                    str(
+                        leon.set_answer_data(
+                            'list_element',
+                            {
+                                'url': f'https://{breach["Domain"]}',
+                                'name': breach['Name'],
+                                'total': breach['PwnCount'],
+                            },
+                        )
+                    )
+                    for breach in breaches
+                )
                 leon.answer({
                     'key': 'pwned',
                     'data': {

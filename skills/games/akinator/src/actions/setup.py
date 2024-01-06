@@ -12,7 +12,7 @@ def run(params: ActionParams) -> None:
     thematic = slots['thematic']['resolution']['value']
     theme_lang = lang
     if thematic != 'characters':
-        theme_lang = lang + '_' + thematic
+        theme_lang = f'{lang}_{thematic}'
 
     try:
         aki = akinator.Akinator()

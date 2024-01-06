@@ -37,7 +37,7 @@ def run(params: ActionParams) -> None:
                 answer_key = 'month'
 
     # Feed the languages list based on the GitHub languages list
-    for i, language in enumerate(github_lang.get_all()):
+    for language in github_lang.get_all():
         # Find the asked language
         if search(r'\b' + escape(language.lower()) + r'\b', params['utterance'].lower()):
             answer_key += '_with_tech'
@@ -87,7 +87,7 @@ def run(params: ActionParams) -> None:
                 separators = [' ', ',', '.']
 
                 # Replace potential separators number
-                for j, separator in enumerate(separators):
+                for separator in separators:
                     stars = stars.replace(separator, '')
 
             result += str(leon.set_answer_data('list_element', {

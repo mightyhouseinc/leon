@@ -8,14 +8,12 @@ from typing import Union, Literal
 def run(params: ActionParams) -> None:
     """Check if a website is down or not"""
 
-    domains: list[str] = []
-
-    # Find entities from the current utterance
-    for item in params['current_entities']:
-        if item['entity'] == 'url':
-            domains.append(item['resolution']['value'].lower())
-
-    if len(domains) == 0:
+    domains: list[str] = [
+        item['resolution']['value'].lower()
+        for item in params['current_entities']
+        if item['entity'] == 'url'
+    ]
+    if not domains:
         # Find entities from the context
         for item in params['entities']:
             if item['entity'] == 'url':
@@ -35,10 +33,7 @@ def run(params: ActionParams) -> None:
         })
 
         try:
-            network.request({
-                'url': 'https://' + domain,
-                'method': 'GET'
-            })
+            network.request({'url': f'https://{domain}', 'method': 'GET'})
             state = 'up'
         except Exception as e:
             if network.is_network_error(e):
@@ -59,7 +54,7 @@ def run(params: ActionParams) -> None:
             }
         })
 
-        if len(domains) == 0:
+        if not domains:
             leon.answer({
                 'key': 'invalid_domain_name',
                 'data': {

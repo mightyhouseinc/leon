@@ -672,9 +672,7 @@ def distance(origin, destination):
         math.radians(lat1),
     ) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) * math.sin(dlon / 2)
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    d = radius * c
-
-    return d
+    return radius * c
 
 
 def build_user_agent():
@@ -705,11 +703,7 @@ def build_request(url, data=None, headers=None, bump="0", secure=False):
     else:
         schemed_url = url
 
-    if "?" in url:
-        delim = "&"
-    else:
-        delim = "?"
-
+    delim = "&" if "?" in url else "?"
     # WHO YOU GONNA CALL? CACHE BUSTERS!
     final_url = f"{schemed_url}{delim}x={int(timeit.time.time() * 1000)}.{bump}"
 
@@ -729,11 +723,7 @@ def catch_request(request, opener=None):
     establishing a connection with a HTTP/HTTPS request
 
     """
-    if opener:
-        _open = opener.open
-    else:
-        _open = urlopen
-
+    _open = opener.open if opener else urlopen
     try:
         uh = _open(request)
         if request.get_full_url() != uh.geturl():
@@ -802,11 +792,7 @@ class HTTPDownloader(threading.Thread):
         self.starttime = start
         self.timeout = timeout
         self.i = i
-        if opener:
-            self._opener = opener.open
-        else:
-            self._opener = urlopen
-
+        self._opener = opener.open if opener else urlopen
         if shutdown_event:
             self._shutdown_event = shutdown_event
         else:
@@ -855,7 +841,7 @@ class HTTPUploaderData:
         IO = BytesIO or StringIO
         try:
             self._data = IO(
-                (f"content1={(chars * multiplier)[0:int(self.length) - 9]}").encode(),
+                f"content1={(chars * multiplier)[:int(self.length) - 9]}".encode()
             )
         except MemoryError:
             raise SpeedtestCLIError(
@@ -903,11 +889,7 @@ class HTTPUploader(threading.Thread):
         self.timeout = timeout
         self.i = i
 
-        if opener:
-            self._opener = opener.open
-        else:
-            self._opener = urlopen
-
+        self._opener = opener.open if opener else urlopen
         if shutdown_event:
             self._shutdown_event = shutdown_event
         else:
@@ -967,10 +949,7 @@ class SpeedtestResults:
         self.download = download
         self.upload = upload
         self.ping = ping
-        if server is None:
-            self.server = {}
-        else:
-            self.server = server
+        self.server = {} if server is None else server
         self.client = client or {}
 
         self._share = None
@@ -978,11 +957,7 @@ class SpeedtestResults:
         self.bytes_received = 0
         self.bytes_sent = 0
 
-        if opener:
-            self._opener = opener
-        else:
-            self._opener = build_opener()
-
+        self._opener = opener if opener else build_opener()
         self._secure = secure
 
     def __repr__(self):
@@ -995,10 +970,10 @@ class SpeedtestResults:
         if self._share:
             return self._share
 
-        download = int(round(self.download / 1000.0, 0))
         ping = int(round(self.ping, 0))
         upload = int(round(self.upload / 1000.0, 0))
 
+        download = int(round(self.download / 1000.0, 0))
         # Build the request to send results back to speedtest.net
         # We use a list instead of a dict because the API expects parameters
         # in a certain order
@@ -1011,10 +986,7 @@ class SpeedtestResults:
             "screendpi=",
             f"upload={upload}",
             "testmethod=http",
-            "hash=%s"
-            % md5(
-                ("%s-%s-%s-%s" % (ping, upload, download, "297aae72")).encode(),
-            ).hexdigest(),
+            f'hash={md5(f"{ping}-{upload}-{download}-297aae72".encode()).hexdigest()}',
             "touchscreen=none",
             "startmode=pingselect",
             "accuracy=1",
@@ -1384,11 +1356,7 @@ class Speedtest:
         urlparts = urlparse(server)
 
         name, ext = os.path.splitext(urlparts[2])
-        if ext:
-            url = os.path.dirname(server)
-        else:
-            url = server
-
+        url = os.path.dirname(server) if ext else server
         request = build_request(url)
         uh, e = catch_request(request, opener=self._opener)
         if e:
@@ -1413,9 +1381,7 @@ class Speedtest:
                         extension = [ext]
                         break
         if not urlparts or not extension:
-            raise InvalidSpeedtestMiniServer(
-                "Invalid Speedtest Mini Server: " "%s" % server,
-            )
+            raise InvalidSpeedtestMiniServer(f"Invalid Speedtest Mini Server: {server}")
 
         self.servers = [
             {
@@ -1473,7 +1439,7 @@ class Speedtest:
             latency_url = f"{url}/latency.txt?x={stamp}"
             for i in range(0, 3):
                 this_latency_url = f"{latency_url}.{i}"
-                printer(f"{'GET'} {this_latency_url}", debug=True)
+                printer(f"GET {this_latency_url}", debug=True)
                 urlparts = urlparse(latency_url)
                 try:
                     if urlparts[0] == "https":
@@ -1533,10 +1499,7 @@ class Speedtest:
         urls = []
         for size in self.config["sizes"]["download"]:
             for _ in range(0, self.config["counts"]["download"]):
-                urls.append(
-                    "%s/random%sx%s.jpg"
-                    % (os.path.dirname(self.best["url"]), size, size),
-                )
+                urls.append(f'{os.path.dirname(self.best["url"])}/random{size}x{size}.jpg')
 
         request_count = len(urls)
         requests = []
@@ -1865,11 +1828,7 @@ def parse_args():
     )
 
     options = parser.parse_args()
-    if isinstance(options, tuple):
-        args = options[0]
-    else:
-        args = options
-    return args
+    return options[0] if isinstance(options, tuple) else options
 
 
 def validate_optional_args(args):
@@ -1944,11 +1903,7 @@ def shell():
     machine_format = args.csv or args.json
 
     # Don't set a callback if we are running quietly
-    if quiet or debug:
-        callback = do_nothing
-    else:
-        callback = print_dots(shutdown_event)
-
+    callback = do_nothing if quiet or debug else print_dots(shutdown_event)
     printer("Retrieving speedtest.net configuration...", quiet)
     try:
         speedtest = Speedtest(
@@ -1992,15 +1947,17 @@ def shell():
             speedtest.get_servers(servers=args.server, exclude=args.exclude)
         except NoMatchedServers:
             raise SpeedtestCLIError(
-                "No matched servers: %s" % ", ".join("%s" % s for s in args.server),
+                f'No matched servers: {", ".join(f"{s}" for s in args.server)}'
             )
         except (ServersRetrievalError,) + HTTP_ERRORS:
             printer("Cannot retrieve speedtest server list", error=True)
             raise SpeedtestCLIError(get_exception())
         except InvalidServerIDType:
             raise SpeedtestCLIError(
-                "%s is an invalid server type, must "
-                "be an int" % ", ".join("%s" % s for s in args.server),
+                (
+                    "%s is an invalid server type, must "
+                    "be an int" % ", ".join(f"{s}" for s in args.server)
+                )
             )
 
         if args.server and len(args.server) == 1:
@@ -2008,7 +1965,7 @@ def shell():
         else:
             printer("Selecting best server based on ping...", quiet)
         speedtest.get_best_server()
-    elif args.mini:
+    else:
         speedtest.get_best_server(speedtest.set_mini_server(args.mini))
 
     results = speedtest.results

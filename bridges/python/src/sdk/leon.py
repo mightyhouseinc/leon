@@ -37,19 +37,19 @@ class Leon:
                 for key, value in data.items():
                     # In case the answer needs speech and text differentiation
                     if not isinstance(answer, str) and answer.get('text'):
-                        answer['text'] = answer['text'].replace('%{}%'.format(key), str(value))
-                        answer['speech'] = answer['speech'].replace('%{}%'.format(key), str(value))
+                        answer['text'] = answer['text'].replace(f'%{key}%', str(value))
+                        answer['speech'] = answer['speech'].replace(f'%{key}%', str(value))
                     else:
-                        answer = answer.replace('%{}%'.format(key), str(value))
+                        answer = answer.replace(f'%{key}%', str(value))
 
             if SKILL_CONFIG.get('variables'):
                 for key, value in SKILL_CONFIG['variables'].items():
                     # In case the answer needs speech and text differentiation
                     if not isinstance(answer, str) and answer.get('text'):
-                        answer['text'] = answer['text'].replace('%{}%'.format(key), str(value))
-                        answer['speech'] = answer['speech'].replace('%{}%'.format(key), str(value))
+                        answer['text'] = answer['text'].replace(f'%{key}%', str(value))
+                        answer['speech'] = answer['speech'].replace(f'%{key}%', str(value))
                     else:
-                        answer = answer.replace('%{}%'.format(key), str(value))
+                        answer = answer.replace(f'%{key}%', str(value))
 
             return answer
         except Exception as e:
