@@ -13,13 +13,18 @@ def run(params: ActionParams) -> None:
     if todo_lists_count == 0:
         return leon.answer({'key': 'no_list'})
 
-    result: str = ''
-    for list_element in memory.get_todo_lists():
-        result += str(leon.set_answer_data('list_list_element', {
-            'list': list_element['name'],
-            'todos_nb': memory.count_todo_items(list_element['name'])
-        }))
-
+    result: str = ''.join(
+        str(
+            leon.set_answer_data(
+                'list_list_element',
+                {
+                    'list': list_element['name'],
+                    'todos_nb': memory.count_todo_items(list_element['name']),
+                },
+            )
+        )
+        for list_element in memory.get_todo_lists()
+    )
     leon.answer({
         'key': 'lists_listed',
         'data': {

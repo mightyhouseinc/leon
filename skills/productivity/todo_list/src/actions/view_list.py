@@ -39,8 +39,6 @@ def run(params: ActionParams) -> None:
     completed_todos = memory.get_completed_todo_items(list_name)
 
     result_uncompleted_todos: str = ''
-    result_completed_todos: str = ''
-
     if len(uncompleted_todos) == 0:
         leon.answer({
             'key': 'no_unchecked_todo',
@@ -68,9 +66,14 @@ def run(params: ActionParams) -> None:
             }
         })
 
-    for todo in completed_todos:
-        result_completed_todos += str(leon.set_answer_data('list_completed_todo_element', {'todo': todo['name']}))
-
+    result_completed_todos: str = ''.join(
+        str(
+            leon.set_answer_data(
+                'list_completed_todo_element', {'todo': todo['name']}
+            )
+        )
+        for todo in completed_todos
+    )
     leon.answer({
         'key': 'completed_todos_listed',
         'data': {
